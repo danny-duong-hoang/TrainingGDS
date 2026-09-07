@@ -5124,6 +5124,706 @@ window.GDS_SCENARIOS["tqt_tte"] = {
 };
 
 
+/* --- amadeus-fare-rules-open.js --- */
+/**
+ * Scenario: Display Fare Rules & Audit Penalties (FQN / FQN*PE / FQN*VC)
+ */
+window.GDS_SCENARIOS = window.GDS_SCENARIOS || {};
+
+window.GDS_SCENARIOS["fare_rules_open"] = {
+  meta: {
+    id: "fare_rules_open",
+    system: "AMADEUS",
+    title: "Display Fare Rules & Penalties (FQN / *PE / *VC)",
+    blurb: "Audit fare basis rules · FQN notes · *PE penalties & *VC voluntary changes",
+    badge: "FARE RULES",
+    badgeClass: "badge-blue",
+    category: "Fare Rules"
+  },
+
+  caseMeta: {
+    "PNR": "RUL902",
+    "PASSENGER": "ANDERSSON/ERIK MR",
+    "TICKET NO.": "117-4455667788",
+    "ROUTE": "ARN → LHR → ARN",
+    "ISSUING OFFICE": "STOSG34AA",
+    "TASK": "Audit fare rules and penalties (FQN / FQN1*PE / FQN1*VC) to verify reissue fees and refund conditions."
+  },
+
+  officeConfig: {
+    startOffice: "STOQK2100",
+    targetOffice: "STOSG34AA",
+    offices: [
+      { id: "STOQK2100", label: "STOQK2100 (DEFAULT)" },
+      { id: "STOSG34AA", label: "STOSG34AA (ISSUING OFFICE)" }
+    ]
+  },
+
+  bootLines: [
+    { type: "info", text: "AMADEUS SELLING PLATFORM CONNECT — STOQK2100" },
+    { type: "dim",  text: "OFFICE: STOQK2100 | AGENT: ATC-TRAINING" },
+    { type: "dim",  text: "CASE: FARE RULES AUDIT (FQN) & PENALTY VERIFICATION (*PE / *VC)" },
+    { type: "ok",   text: "READY" }
+  ],
+
+  steps: [
+    {
+      id: "change_office",
+      title: "Change Office ID",
+      task: "Switch to issuing office STOSG34AA using the Active Office dropdown.",
+      hint: "Open <strong>Active Office</strong> and select <strong>STOSG34AA (ISSUING OFFICE)</strong>.",
+      inputMatch: {
+        type: "office_dropdown",
+        targetOffice: "STOSG34AA",
+        aliases: []
+      },
+      stateUpdates: {
+        office: "STOSG34AA"
+      },
+      terminalResponse: [
+        { type: "ok",  text: "SIGN IN TO OFFICE: STOSG34AA" },
+        { type: "ok",  text: "OFFICE ID  : STOSG34AA" },
+        { type: "ok",  text: "STATUS     : SIGNED IN" },
+        { type: "dim", text: "" },
+        { type: "ok",  text: "Office ID changed to STOSG34AA" }
+      ]
+    },
+    {
+      id: "retrieve_pnr",
+      title: "Retrieve PNR (RT)",
+      task: "Retrieve booking record RUL902 for passenger ANDERSSON/ERIK MR.",
+      hint: "Type <strong>RTRUL902</strong> or <strong>RT RUL902</strong>",
+      inputMatch: {
+        aliases: ["RTRUL902", "RT RUL902", "RT"],
+        patterns: ["^RT\\s*RUL902$"]
+      },
+      terminalResponse: [
+        { type: "ok",  text: "RP/STOSG34AA/STOSG34AA  AA/SU  15OCT24/1015Z  RUL902" },
+        { type: "ok",  text: "  1.ANDERSSON/ERIK MR" },
+        { type: "ok",  text: "  2  SK 0525 T 12NOV 2 ARNLHR HK1  0750 0935  *1A/E*" },
+        { type: "ok",  text: "  3  SK 0526 T 19NOV 2 LHRARN HK1  1025 1400  *1A/E*" },
+        { type: "ok",  text: "  4 AP STO +46 8 5051234 - A" },
+        { type: "ok",  text: "  5 APE ERIK.ANDERSSON@CORP.SE" },
+        { type: "ok",  text: "  6 TK OK15OCT/STOSG34AA//ETSK" },
+        { type: "ok",  text: "  7 FA PAX 117-4455667788/ETSK/EUR420.00/15OCT/STOSG34AA/01234567/S2-3" },
+        { type: "ok",  text: "  8 FB PAX 0010000001 TKT/T1" }
+      ]
+    },
+    {
+      id: "ticket_list",
+      title: "Open Ticket List (RTTN)",
+      task: "Display ticket elements associated with the PNR using RTTN.",
+      hint: "Type <strong>RTTN</strong>",
+      inputMatch: {
+        aliases: ["RTTN"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TICKET RECORD DISPLAY — PNR RUL902" },
+        { type: "ok",   text: "  7  47 FA PAX 117-4455667788/ETSK/EUR420.00/15OCT/STOSG34AA/01234567/S2-3" },
+        { type: "ok",   text: "  8     FB PAX 0010000001 TKT/T1" },
+        { type: "dim",  text: "ELECTRONIC TICKET ASSOCIATED WITH COUPONS 1-2" }
+      ]
+    },
+    {
+      id: "display_ticket",
+      title: "Display Ticket (TWD)",
+      task: "Display electronic ticket coupons to inspect fare basis code and baggage allowance.",
+      hint: "Type <strong>TWD</strong> or <strong>TWD/L7</strong>",
+      inputMatch: {
+        aliases: ["TWD", "TWD/L7", "TWDL7", "TWD/T1", "TWD1", "TWD/TKT117-4455667788"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TWD" },
+        { type: "ok",   text: "TICKET: 117-4455667788    NAME: ANDERSSON/ERIK MR" },
+        { type: "ok",   text: "ISSUED: 15OCT24  STOSG34AA  FOP: CC AX XXXXXXXXXXXX0001" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "dim",  text: "CPN A/L  FLT   CLS DATE   BRD OFF ST NVA   NVB   FAR BSS   BG" },
+        { type: "ok",   text: "  1 SK   0525   T  12NOV  ARN LHR  O       12NOV TR1GB     1P" },
+        { type: "ok",   text: "  2 SK   0526   T  19NOV  LHR ARN  O       19NOV TR1GB     1P" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "FARE: EUR 310.00   TAX: EUR 110.00   TOTAL: EUR 420.00" },
+        { type: "ok",   text: "FARE BASIS: TR1GB | INCLUDED BAGGAGE: 1PC (23KG)" }
+      ]
+    },
+    {
+      id: "display_stored_fare",
+      title: "Display Stored Fare Mask (TQT)",
+      task: "Display the stored Transitional Stored Ticket (TST) with TQT to verify the fare quote line number.",
+      hint: "Type <strong>TQT</strong> or <strong>TTH</strong>",
+      inputMatch: {
+        aliases: ["TQT", "TTH", "TQT/T1", "TTH/T1", "TQTT1"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TQT/T1" },
+        { type: "ok",   text: "TST 01 TYPE P   PAX 1.1 ANDERSSON/ERIK MR" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "dim",  text: "AL FLGT  BK T DATE  TIME  FARE BASIS      NVB   NVA    BG" },
+        { type: "ok",   text: "SK 0525  T  T 12NOV 0750  TR1GB                 12NOV  1P" },
+        { type: "ok",   text: "SK 0526  T  T 19NOV 1025  TR1GB                 19NOV  1P" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "FARE: EUR 310.00   TAX: EUR 110.00   TOTAL: EUR 420.00" },
+        { type: "ok",   text: "QUOTE LINE 01 STORED — READY FOR FARE RULES DISPLAY (FQN1)" }
+      ]
+    },
+    {
+      id: "open_fare_rules",
+      title: "Open Fare Rules Menu (FQN1)",
+      task: "Display the full fare rule category table for quote line 1 using FQN1.",
+      hint: "Type <strong>FQN1</strong> (or <strong>FQN01</strong>)",
+      inputMatch: {
+        aliases: ["FQN1", "FQN01", "FQN", "FQQ01", "FQQ1"]
+      },
+      terminalResponse: [
+        { type: "info", text: "FQN1" },
+        { type: "ok",   text: "FARE BASIS: TR1GB           CARRIER: SK    ROUTE: ARN-LHR" },
+        { type: "dim",  text: "RULE NUMBER: 7012           TARIFF: EUR1   PUBLISHED: 15OCT24" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "CAT 01  ELIGIBILITY" },
+        { type: "ok",   text: "CAT 02  DAY/TIME RESTRICTIONS" },
+        { type: "ok",   text: "CAT 03  SEASONALITY" },
+        { type: "ok",   text: "CAT 04  FLIGHT APPLICATION" },
+        { type: "ok",   text: "CAT 05  ADVANCE RESERVATIONS / TICKETING" },
+        { type: "ok",   text: "CAT 08  STOPOVERS" },
+        { type: "ok",   text: "CAT 14  TRAVEL RESTRICTIONS" },
+        { type: "ok",   text: "CAT 15  SALES RESTRICTIONS" },
+        { type: "warn", text: "CAT 16  PENALTIES                  (USE FQN1*PE)" },
+        { type: "warn", text: "CAT 31  VOLUNTARY CHANGES          (USE FQN1*VC)" },
+        { type: "ok",   text: "CAT 33  VOLUNTARY REFUNDS" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "info", text: "USE FQN1*{CAT CODE} TO EXPAND SPECIFIC PARAGRAPH" }
+      ]
+    },
+    {
+      id: "check_penalties",
+      title: "Check Penalties (FQN1*PE)",
+      task: "Display Category 16 (Penalties) using FQN1*PE to check change fees and cancellation penalties.",
+      hint: "Type <strong>FQN1*PE</strong>",
+      inputMatch: {
+        aliases: ["FQN1*PE", "FQN*PE", "FQN1PE", "FQN01*PE", "FQN1*16"]
+      },
+      terminalResponse: [
+        { type: "info", text: "FQN1*PE" },
+        { type: "ok",   text: "CATEGORY 16 - PENALTIES - FARE BASIS: TR1GB" },
+        { type: "dim",  text: "ORIGINATING AREA: SCANDINAVIA TO EUROPE" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "CHANGES:" },
+        { type: "ok",   text: "  BEFORE DEPARTURE OF FIRST FLIGHT:" },
+        { type: "ok",   text: "    CHANGES PERMITTED FOR REISSUE / REVALIDATION." },
+        { type: "warn", text: "    CHARGE EUR 70.00 FOR REISSUE OR REVALIDATION PER DIRECTION." },
+        { type: "ok",   text: "    FARE DIFFERENCE APPLIES IF NEW FARE IS HIGHER." },
+        { type: "ok",   text: "  AFTER DEPARTURE OF FIRST FLIGHT:" },
+        { type: "warn", text: "    CHANGES PERMITTED: CHARGE EUR 70.00 PER DIRECTION." },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "CANCELLATIONS:" },
+        { type: "warn", text: "  BEFORE DEPARTURE: CHARGE EUR 150.00 FOR REFUND." },
+        { type: "warn", text: "  AFTER DEPARTURE: TICKET IS NON-REFUNDABLE." },
+        { type: "warn", text: "NO-SHOW: CHANGES / REFUND NOT PERMITTED FOR NO-SHOW." }
+      ]
+    },
+    {
+      id: "check_voluntary_changes",
+      title: "Check Voluntary Changes (FQN1*VC)",
+      task: "Display Category 31 (Voluntary Changes) using FQN1*VC to inspect automated ATC reissue rules.",
+      hint: "Type <strong>FQN1*VC</strong>",
+      inputMatch: {
+        aliases: ["FQN1*VC", "FQN*VC", "FQN1VC", "FQN01*VC", "FQN1*31"]
+      },
+      terminalResponse: [
+        { type: "info", text: "FQN1*VC" },
+        { type: "ok",   text: "CATEGORY 31 - VOLUNTARY CHANGES - FARE BASIS: TR1GB" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "ATC AUTOMATED REISSUE SUPPORTED." },
+        { type: "ok",   text: "REPRICE USING ORIGINAL DATE OF ISSUE (DOI): 15OCT24." },
+        { type: "ok",   text: "POINT OF ISSUE (POI): STO (OFFICE STOSG34AA)." },
+        { type: "ok",   text: "NEW FARE MUST BE EQUAL OR HIGHER. DOWNGRADE NOT PERMITTED." },
+        { type: "ok",   text: "CHANGE FEE EUR 70.00 PLUS ANY FARE/TAX DIFFERENCE COLLECTED AS ADD COLLECT." },
+        { type: "ok",   text: "RESIDUAL FARE VALUE IS NON-REFUNDABLE." }
+      ]
+    }
+  ],
+
+  winMessage: {
+    title: "Fare Rules Audit Complete ✓",
+    text: "Fare rules drill finished! FQN displays Fare Quote Notes for a fare. The line number matches the quote or stored TST line (e.g. FQN1). Use paragraph codes to jump straight to critical sections: *PE for Category 16 (Penalties: change fee and refundability) and *VC for Category 31 (Voluntary Changes: ATC rules, DOI preservation, and reissue conditions). Always check *PE before quoting change fees to a passenger."
+  }
+};
+
+
+/* --- amadeus-check-fare-family.js --- */
+/**
+ * Scenario: Check Fare Family Brand & Included Baggage (TTH / TTH/T1)
+ */
+window.GDS_SCENARIOS = window.GDS_SCENARIOS || {};
+
+window.GDS_SCENARIOS["check_fare_family"] = {
+  meta: {
+    id: "check_fare_family",
+    system: "AMADEUS",
+    title: "Check Fare Family Brand (TTH / TTH/T1)",
+    blurb: "Audit stored ticket history · Identify AFF-ECOSTAND · Prepare /FF- filter",
+    badge: "FARE FAMILY",
+    badgeClass: "badge-blue",
+    category: "Baggage & Fare Family"
+  },
+
+  caseMeta: {
+    "PNR": "FAM421",
+    "PASSENGER": "NILSSON/KARIN MS",
+    "TICKET NO.": "117-9911223344",
+    "ROUTE": "ARN → CPH → ARN",
+    "ISSUING OFFICE": "STOSG34AA",
+    "TASK": "Before rebooking, audit ticket history with TTH and TTH/T1 to identify the original Fare Family / brand name (AFF) and included baggage."
+  },
+
+  officeConfig: {
+    startOffice: "STOQK2100",
+    targetOffice: "STOSG34AA",
+    offices: [
+      { id: "STOQK2100", label: "STOQK2100 (DEFAULT)" },
+      { id: "STOSG34AA", label: "STOSG34AA (ISSUING OFFICE)" }
+    ]
+  },
+
+  bootLines: [
+    { type: "info", text: "AMADEUS SELLING PLATFORM CONNECT — STOQK2100" },
+    { type: "dim",  text: "OFFICE: STOQK2100 | AGENT: ATC-TRAINING" },
+    { type: "dim",  text: "CASE: AUDIT FARE FAMILY (TTH / TTH/T1) BEFORE REBOOKING" },
+    { type: "ok",   text: "READY" }
+  ],
+
+  steps: [
+    {
+      id: "change_office",
+      title: "Change Office ID",
+      task: "Switch to issuing office STOSG34AA using the Active Office dropdown.",
+      hint: "Open <strong>Active Office</strong> and select <strong>STOSG34AA (ISSUING OFFICE)</strong>.",
+      inputMatch: {
+        type: "office_dropdown",
+        targetOffice: "STOSG34AA",
+        aliases: []
+      },
+      stateUpdates: {
+        office: "STOSG34AA"
+      },
+      terminalResponse: [
+        { type: "ok",  text: "SIGN IN TO OFFICE: STOSG34AA" },
+        { type: "ok",  text: "OFFICE ID  : STOSG34AA" },
+        { type: "ok",  text: "STATUS     : SIGNED IN" },
+        { type: "dim", text: "" },
+        { type: "ok",  text: "Office ID changed to STOSG34AA" }
+      ]
+    },
+    {
+      id: "retrieve_pnr",
+      title: "Retrieve PNR (RT)",
+      task: "Retrieve booking record FAM421 for passenger NILSSON/KARIN MS.",
+      hint: "Type <strong>RTFAM421</strong> or <strong>RT FAM421</strong>",
+      inputMatch: {
+        aliases: ["RTFAM421", "RT FAM421", "RT"],
+        patterns: ["^RT\\s*FAM421$"]
+      },
+      terminalResponse: [
+        { type: "ok",  text: "RP/STOSG34AA/STOSG34AA  AA/SU  10NOV24/0930Z  FAM421" },
+        { type: "ok",  text: "  1.NILSSON/KARIN MS" },
+        { type: "ok",  text: "  2  SK 1415 E 20DEC 5 ARNCPH HK1  0605 0720  *1A/E*" },
+        { type: "ok",  text: "  3  SK 1416 E 27DEC 5 CPHARN HK1  1730 1845  *1A/E*" },
+        { type: "ok",  text: "  4 AP STO +46 8 7771234 - A" },
+        { type: "ok",  text: "  5 APE KARIN.NILSSON@TRAVEL.SE" },
+        { type: "ok",  text: "  6 TK OK10NOV/STOSG34AA//ETSK" },
+        { type: "ok",  text: "  7 FA PAX 117-9911223344/ETSK/EUR180.00/10NOV/STOSG34AA/01234567/S2-3" },
+        { type: "ok",  text: "  8 FB PAX 0010000001 TKT/T1" }
+      ]
+    },
+    {
+      id: "ticket_list",
+      title: "Open Ticket List (RTTN)",
+      task: "Display ticket elements for the PNR using RTTN.",
+      hint: "Type <strong>RTTN</strong>",
+      inputMatch: {
+        aliases: ["RTTN"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TICKET RECORD DISPLAY — PNR FAM421" },
+        { type: "ok",   text: "  7  47 FA PAX 117-9911223344/ETSK/EUR180.00/10NOV/STOSG34AA/01234567/S2-3" },
+        { type: "ok",   text: "  8     FB PAX 0010000001 TKT/T1" },
+        { type: "dim",  text: "ELECTRONIC TICKET ASSOCIATED WITH COUPONS 1-2" }
+      ]
+    },
+    {
+      id: "display_ticket",
+      title: "Display Ticket (TWD)",
+      task: "Open electronic ticket with TWD to inspect coupon statuses and baggage allowance.",
+      hint: "Type <strong>TWD</strong> or <strong>TWD/L7</strong>",
+      inputMatch: {
+        aliases: ["TWD", "TWD/L7", "TWDL7", "TWD/T1", "TWD1", "TWD/TKT117-9911223344"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TWD" },
+        { type: "ok",   text: "TICKET: 117-9911223344    NAME: NILSSON/KARIN MS" },
+        { type: "ok",   text: "ISSUED: 10NOV24  STOSG34AA  FOP: CC VI XXXXXXXXXXXX4411" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "dim",  text: "CPN A/L  FLT   CLS DATE   BRD OFF ST NVA   NVB   FAR BSS   BG" },
+        { type: "ok",   text: "  1 SK   1415   E  20DEC  ARN CPH  O       20DEC ELIGHT1   1P" },
+        { type: "ok",   text: "  2 SK   1416   E  27DEC  CPH ARN  O       27DEC ELIGHT1   1P" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "FARE: EUR 180.00   TAX: EUR 64.00   TOTAL: EUR 244.00" },
+        { type: "ok",   text: "FARE BASIS: ELIGHT1 | INCLUDED BAGGAGE: 1PC (23KG)" },
+        { type: "warn", text: "NOTICE: FARE BASIS CODE SAYS 'LIGHT1' BUT TICKET SHOWS 1P BAGGAGE" },
+        { type: "info", text: "MUST AUDIT TICKET HISTORY (TTH) TO DISCOVER REAL BRAND / FARE FAMILY" }
+      ]
+    },
+    {
+      id: "display_ticket_history",
+      title: "List Ticket Stored Fares (TTH)",
+      task: "Display Ticket / Fare History with TTH to view stored pricing records for this ticket.",
+      hint: "Type <strong>TTH</strong>",
+      inputMatch: {
+        aliases: ["TTH"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TTH" },
+        { type: "ok",   text: "TICKET HISTORY DISPLAY — PNR FAM421" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "TKT 01  PAX 1.1 NILSSON/KARIN MS" },
+        { type: "ok",   text: "  REC 01  TST 01  ISSUED: 10NOV24  OFFICE: STOSG34AA" },
+        { type: "ok",   text: "  FARE: EUR 180.00  TAX: EUR 64.00  TOTAL: EUR 244.00" },
+        { type: "ok",   text: "  AIRLINE: SK  BRAND: ECOSTAND  BG: 1PC" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "info", text: "USE TTH/T1 TO EXPAND STORED FARE RECORD 1 IN FULL DETAIL" }
+      ]
+    },
+    {
+      id: "open_fare_history_record",
+      title: "Expand Fare History Record (TTH/T1)",
+      task: "Open stored fare record 1 using TTH/T1 to inspect the full Fare Family and brand name (AFF).",
+      hint: "Type <strong>TTH/T1</strong> (or <strong>TTHT1</strong>)",
+      inputMatch: {
+        aliases: ["TTH/T1", "TTHT1", "TTH/T01", "TTH1"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TTH/T1" },
+        { type: "ok",   text: "TICKET HISTORY RECORD 01 — STORED FARE CALCULATION" },
+        { type: "ok",   text: "PAX: 1.1 NILSSON/KARIN MS   TKT: 117-9911223344" },
+        { type: "ok",   text: "FARE BASIS: ELIGHT1         CARRIER: SK" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "warn", text: "AFF-ECOSTAND                SAS GO SMART / STANDARD" },
+        { type: "ok",   text: "INCLUDED ANCILLARY SERVICES:" },
+        { type: "ok",   text: "  - CHECKED BAGGAGE: 1PC UP TO 23KG INCLUDED" },
+        { type: "ok",   text: "  - CABIN BAGGAGE: 1PC UP TO 8KG + PERSONAL ITEM" },
+        { type: "ok",   text: "  - ADVANCE SEAT SELECTION: STANDARD SEATS INCLUDED" },
+        { type: "ok",   text: "  - CHANGES: PERMITTED FOR EUR 70.00 FEE" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "info", text: "CRITICAL: MEMORIZE BRAND NAME 'ECOSTAND' FOR /FF-ECOSTAND FILTER" }
+      ]
+    }
+  ],
+
+  winMessage: {
+    title: "Fare Family Audit Complete ✓",
+    text: "Fare family check drill finished! Always verify Fare Family before rebooking: TTH lists stored ticket pricing history, and TTH/T1 displays the detailed breakdown containing the carrier's Fare Family brand name (AFF-ECOSTAND). Even when a fare basis code looks confusing, TTH/T1 gives you the true commercial brand. Pass /FF-ECOSTAND into your FXQ or FXP entry to protect the passenger's 1PC baggage allowance during rebooking."
+  }
+};
+
+
+/* --- amadeus-drop-baggage-ff.js --- */
+/**
+ * Scenario: Drop Baggage Trap & Fare Family Filter (FXQ /FF-ECOSTAND)
+ */
+window.GDS_SCENARIOS = window.GDS_SCENARIOS || {};
+
+window.GDS_SCENARIOS["drop_baggage_ff"] = {
+  meta: {
+    id: "drop_baggage_ff",
+    system: "AMADEUS",
+    title: "Drop Baggage Trap & Fare Family Filter (FXQ /FF-)",
+    blurb: "Unused rebook · Plain FXQ drops 1PC→0PC · Protect baggage with /FF-ECOSTAND",
+    badge: "DROP BAGGAGE",
+    badgeClass: "badge-blue",
+    category: "Baggage & Fare Family"
+  },
+
+  caseMeta: {
+    "PNR": "BAG882",
+    "PASSENGER": "BERG/JONAS MR",
+    "TICKET NO.": "117-7722334455",
+    "ROUTE": "ARN → HEL → ARN",
+    "ISSUING OFFICE": "STOSG34AA",
+    "TASK": "Rebook inbound flight to 28DEC. Original ticket has 1PC baggage. Price with FXQ, avoid the drop baggage trap, and protect baggage allowance with /FF-ECOSTAND."
+  },
+
+  officeConfig: {
+    startOffice: "STOQK2100",
+    targetOffice: "STOSG34AA",
+    offices: [
+      { id: "STOQK2100", label: "STOQK2100 (DEFAULT)" },
+      { id: "STOSG34AA", label: "STOSG34AA (ISSUING OFFICE)" }
+    ]
+  },
+
+  bootLines: [
+    { type: "info", text: "AMADEUS SELLING PLATFORM CONNECT — STOQK2100" },
+    { type: "dim",  text: "OFFICE: STOQK2100 | AGENT: ATC-TRAINING" },
+    { type: "dim",  text: "CASE: UNUSED REBOOK — PROTECT BAGGAGE ALLOWANCE (/FF- FILTER)" },
+    { type: "ok",   text: "READY" }
+  ],
+
+  steps: [
+    {
+      id: "change_office",
+      title: "Change Office ID",
+      task: "Switch to issuing office STOSG34AA using the Active Office dropdown.",
+      hint: "Open <strong>Active Office</strong> and select <strong>STOSG34AA (ISSUING OFFICE)</strong>.",
+      inputMatch: {
+        type: "office_dropdown",
+        targetOffice: "STOSG34AA",
+        aliases: []
+      },
+      stateUpdates: {
+        office: "STOSG34AA"
+      },
+      terminalResponse: [
+        { type: "ok",  text: "SIGN IN TO OFFICE: STOSG34AA" },
+        { type: "ok",  text: "OFFICE ID  : STOSG34AA" },
+        { type: "ok",  text: "STATUS     : SIGNED IN" },
+        { type: "dim", text: "" },
+        { type: "ok",  text: "Office ID changed to STOSG34AA" }
+      ]
+    },
+    {
+      id: "retrieve_pnr",
+      title: "Retrieve PNR (RT)",
+      task: "Retrieve booking record BAG882 for passenger BERG/JONAS MR.",
+      hint: "Type <strong>RTBAG882</strong> or <strong>RT BAG882</strong>",
+      inputMatch: {
+        aliases: ["RTBAG882", "RT BAG882", "RT"],
+        patterns: ["^RT\\s*BAG882$"]
+      },
+      terminalResponse: [
+        { type: "ok",  text: "RP/STOSG34AA/STOSG34AA  AA/SU  15NOV24/1105Z  BAG882" },
+        { type: "ok",  text: "  1.BERG/JONAS MR" },
+        { type: "ok",  text: "  2  SK 0702 T 15DEC 7 ARNHEL HK1  0830 1100  *1A/E*" },
+        { type: "ok",  text: "  3  SK 0715 T 22DEC 1 HELARN HK1  1640 1710  *1A/E*" },
+        { type: "ok",  text: "  4 AP STO +46 8 5551234 - A" },
+        { type: "ok",  text: "  5 APE JONAS.BERG@TRAVEL.SE" },
+        { type: "ok",  text: "  6 TK OK05NOV/STOSG34AA//ETSK" },
+        { type: "ok",  text: "  7 FA PAX 117-7722334455/ETSK/EUR220.00/05NOV/STOSG34AA/01234567/S2-3" },
+        { type: "ok",  text: "  8 FB PAX 0010000001 TKT/T1" }
+      ]
+    },
+    {
+      id: "ticket_list",
+      title: "Open Ticket List (RTTN)",
+      task: "Display ticket elements associated with the PNR using RTTN.",
+      hint: "Type <strong>RTTN</strong>",
+      inputMatch: {
+        aliases: ["RTTN"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TICKET RECORD DISPLAY — PNR BAG882" },
+        { type: "ok",   text: "  7  47 FA PAX 117-7722334455/ETSK/EUR220.00/05NOV/STOSG34AA/01234567/S2-3" },
+        { type: "ok",   text: "  8     FB PAX 0010000001 TKT/T1" },
+        { type: "dim",  text: "ELECTRONIC TICKET ASSOCIATED WITH COUPONS 1-2" }
+      ]
+    },
+    {
+      id: "display_ticket",
+      title: "Display Ticket (TWD)",
+      task: "Display electronic ticket to check coupon statuses and original baggage allowance.",
+      hint: "Type <strong>TWD</strong> or <strong>TWD/L7</strong>",
+      inputMatch: {
+        aliases: ["TWD", "TWD/L7", "TWDL7", "TWD/T1", "TWD1", "TWD/TKT117-7722334455"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TWD" },
+        { type: "ok",   text: "TICKET: 117-7722334455    NAME: BERG/JONAS MR" },
+        { type: "ok",   text: "ISSUED: 05NOV24  STOSG34AA  FOP: CC AX XXXXXXXXXXXX0001" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "dim",  text: "CPN A/L  FLT   CLS DATE   BRD OFF ST NVA   NVB   FAR BSS   BG" },
+        { type: "ok",   text: "  1 SK   0702   T  15DEC  ARN HEL  O       15DEC TSTAND1   1P" },
+        { type: "ok",   text: "  2 SK   0715   T  22DEC  HEL ARN  O       22DEC TSTAND1   1P" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "FARE: EUR 160.00   TAX: EUR 60.00   TOTAL: EUR 220.00" },
+        { type: "ok",   text: "ORIGINAL BAGGAGE: 1PC (23KG) — BRAND: ECOSTAND" }
+      ]
+    },
+    {
+      id: "check_fare_family",
+      title: "Check Fare Family (TTH/T1)",
+      task: "Audit stored ticket history with TTH/T1 to confirm the commercial brand / Fare Family name.",
+      hint: "Type <strong>TTH/T1</strong> or <strong>TTH</strong>",
+      inputMatch: {
+        aliases: ["TTH/T1", "TTH", "TTHT1", "TTH/T01"]
+      },
+      terminalResponse: [
+        { type: "info", text: "TTH/T1" },
+        { type: "ok",   text: "TICKET HISTORY RECORD 01 — STORED FARE CALCULATION" },
+        { type: "ok",   text: "PAX: 1.1 BERG/JONAS MR      TKT: 117-7722334455" },
+        { type: "warn", text: "AFF-ECOSTAND                SAS GO SMART / STANDARD" },
+        { type: "ok",   text: "INCLUDED ANCILLARY SERVICES: 1PC CHECKED BAG (23KG)" },
+        { type: "info", text: "STORED BRAND: ECOSTAND — MUST PRESERVE WITH /FF-ECOSTAND ON REPRICE" }
+      ]
+    },
+    {
+      id: "check_availability",
+      title: "Check Availability (SN)",
+      task: "Check flight availability on SAS for the new return date 28DEC from HEL to ARN.",
+      hint: "Type <strong>SN28DECHELARN/ASK</strong>",
+      inputMatch: {
+        aliases: [
+          "SN28DECHELARN/ASK",
+          "SN28DECHELARN",
+          "SN 28DEC HELARN /A SK",
+          "SN 28DEC HELARN",
+          "SN28DECHELARN/A SK"
+        ],
+        patterns: ["^SN28DECHELARN.*$"]
+      },
+      terminalResponse: [
+        { type: "ok",  text: "SK  HEL ARN  28DEC" },
+        { type: "ok",  text: "  1  SK 0719  C9 D9 I9  Y9 S9 B9 M9  T9 L9 K9  1415 1445  CR9  0" },
+        { type: "dim", text: "" },
+        { type: "ok",  text: "Class T available on line 1 — flight SK 0719" }
+      ]
+    },
+    {
+      id: "sell_segment",
+      title: "Sell New Segment (SS1T1)",
+      task: "Sell 1 seat in T class on availability line 1.",
+      hint: "Type <strong>SS1T1</strong>",
+      inputMatch: {
+        aliases: ["SS1T1", "SS 1 T 1", "SS 1T1", "SS1T 1"]
+      },
+      terminalResponse: [
+        { type: "ok",  text: "  4  SK 0719 T 28DEC 6 HELARN HK1  1415 1445  *1A/E*" },
+        { type: "dim", text: "" },
+        { type: "ok",  text: "New return segment added on line 4. Old return remains on line 3." }
+      ]
+    },
+    {
+      id: "reprice_unfiltered",
+      title: "Unfiltered Reprice (Drop Baggage Trap!)",
+      task: "Test price the retained segment 2 and new segment 4 without a fare family filter: FXQ/S2,4/R,UP.",
+      hint: "Type <strong>FXQ/S2,4/R,UP</strong>",
+      inputMatch: {
+        aliases: [
+          "FXQ/S2,4/R,UP",
+          "FXQ/S2,4/RUP",
+          "FXQ/S2-4/R,UP",
+          "FXQ/S4,2/R,UP",
+          "FXQ/S2,4/R,UP,STO",
+          "FXQ/S2,4/RUP,STO"
+        ]
+      },
+      terminalResponse: [
+        { type: "info", text: "FXQ/S2,4/R,UP" },
+        { type: "ok",   text: "ATC REISSUE — GUARANTEED (FARE FAMILY: LIGHT)" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "dim",  text: "AL FLGT  BK T DATE  TIME  FARE BASIS      NVB   NVA    BG" },
+        { type: "warn", text: "SK 0702  T  T 15DEC 0830  TLIGHT0                15DEC  0P" },
+        { type: "warn", text: "SK 0719  T  T 28DEC 1415  TLIGHT0                28DEC  0P" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "BASE FARE ......... EUR   190.00      OLD FARE ... EUR   220.00" },
+        { type: "ok",   text: "PENALTY ........... EUR    50.00" },
+        { type: "ok",   text: "TOTAL ADD COLL .... EUR    50.00" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "err",  text: "*** CRITICAL WARNING: DROP BAGGAGE DETECTED! ***" },
+        { type: "err",  text: "ORIGINAL TICKET INCLUDED 1PC BAGGAGE (AFF-ECOSTAND)." },
+        { type: "err",  text: "UNFILTERED FXQ PRICED INTO CHEAPEST BRAND: SAS GO LIGHT (0P BAGGAGE)." },
+        { type: "err",  text: "IF ISSUED, PASSENGER WILL HAVE NO CHECKED BAG AT AIRPORT!" },
+        { type: "info", text: "ACTION: REPRICE WITH /FF-ECOSTAND TO PRESERVE 1PC BAGGAGE" }
+      ]
+    },
+    {
+      id: "reprice_with_ff",
+      title: "Reprice with Fare Family Filter (FXQ /FF-ECOSTAND)",
+      task: "Reprice segments 2 and 4 applying the /FF-ECOSTAND filter to guarantee 1PC included baggage.",
+      hint: "Type <strong>FXQ/S2,4/R,UP/FF-ECOSTAND</strong>",
+      inputMatch: {
+        aliases: [
+          "FXQ/S2,4/R,UP/FF-ECOSTAND",
+          "FXQ/S2,4/RUP/FF-ECOSTAND",
+          "FXQ/S2-4/R,UP/FF-ECOSTAND",
+          "FXQ/S4,2/R,UP/FF-ECOSTAND",
+          "FXQ/S2,4/R,UP,STO/FF-ECOSTAND",
+          "FXP/S2,4/R,UP/FF-ECOSTAND"
+        ]
+      },
+      terminalResponse: [
+        { type: "info", text: "FXQ/S2,4/R,UP/FF-ECOSTAND" },
+        { type: "ok",   text: "ATC REISSUE — GUARANTEED (FARE FAMILY: ECOSTAND)" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "dim",  text: "AL FLGT  BK T DATE  TIME  FARE BASIS      NVB   NVA    BG" },
+        { type: "ok",   text: "SK 0702  T  T 15DEC 0830  TSTAND1                15DEC  1P" },
+        { type: "ok",   text: "SK 0719  T  T 28DEC 1415  TSTAND1                28DEC  1P" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "INCLUDED BAGGAGE: 1PC PRESERVED (BRAND: ECOSTAND)" },
+        { type: "ok",   text: "OLD TICKET: 117-7722334455" },
+        { type: "ok",   text: "BASE FARE ......... EUR   250.00      OLD FARE ... EUR   220.00" },
+        { type: "ok",   text: "DIFF .............. EUR    30.00" },
+        { type: "ok",   text: "TAX BALANCE ....... EUR     0.00" },
+        { type: "ok",   text: "PENALTY ........... EUR    50.00" },
+        { type: "warn", text: "TOTAL ADD COLL .... EUR    80.00" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "TST 01 STORED — REISSUE MASK CREATED WITH 1PC BAGGAGE" }
+      ]
+    },
+    {
+      id: "check_penalties",
+      title: "Check Penalties (FQN1*PE)",
+      task: "Check penalties rule text for line 1 to confirm the EUR 50.00 reissue fee before accepting.",
+      hint: "Type <strong>FQN1*PE</strong>",
+      inputMatch: {
+        aliases: ["FQN1*PE", "FQN*PE", "FQN1PE", "FQN01*PE", "FQN1*16"]
+      },
+      terminalResponse: [
+        { type: "info", text: "FQN1*PE" },
+        { type: "ok",   text: "CATEGORY 16 - PENALTIES - TSTAND1 / ECOSTAND" },
+        { type: "dim",  text: "------------------------------------------------------------" },
+        { type: "ok",   text: "CHANGES BEFORE DEPARTURE: PERMITTED FOR CHARGE EUR 50.00." },
+        { type: "ok",   text: "PENALTY CONFIRMED: EUR 50.00 + EUR 30.00 FARE DIFF = EUR 80.00 TOTAL ADD COLLECT" }
+      ]
+    },
+    {
+      id: "cancel_old_segment",
+      title: "Cancel Old Return Segment (XE3)",
+      task: "Customer accepted and paid EUR 80.00 add collect. Cancel the old return segment 3.",
+      hint: "Type <strong>XE3</strong>",
+      inputMatch: {
+        aliases: ["XE3", "X3", "XE 3"]
+      },
+      terminalResponse: [
+        { type: "ok", text: "  3  SK 0715 T 22DEC 1 HELARN HK1  — CANCELLED" },
+        { type: "ok", text: "OLD RETURN SEGMENT 3 REMOVED FROM ACTIVE ITINERARY" }
+      ]
+    },
+    {
+      id: "end_and_retrieve",
+      title: "Save PNR (ER)",
+      task: "End transaction and retrieve booking to commit the changes and save TST 01.",
+      hint: "Type <strong>ER</strong>",
+      inputMatch: {
+        aliases: ["ER", "ET"]
+      },
+      terminalResponse: [
+        { type: "ok",  text: "RP/STOSG34AA/STOSG34AA  AA/SU  15NOV24/1125Z  BAG882" },
+        { type: "ok",  text: "  1.BERG/JONAS MR" },
+        { type: "ok",  text: "  2  SK 0702 T 15DEC 7 ARNHEL HK1  0830 1100  *1A/E*" },
+        { type: "ok",  text: "  3  SK 0719 T 28DEC 6 HELARN HK1  1415 1445  *1A/E*" },
+        { type: "ok",  text: "  4 AP STO +46 8 5551234 - A" },
+        { type: "ok",  text: "  5 TK OK05NOV/STOSG34AA//ETSK" },
+        { type: "ok",  text: "  6 FA PAX 117-7722334455/ETSK/EUR220.00/05NOV/STOSG34AA/01234567/S2-3" },
+        { type: "ok",  text: "  7 TST 01 REISSUE MASK (ECOSTAND 1PC) VALIDATED" }
+      ]
+    }
+  ],
+
+  winMessage: {
+    title: "Baggage Protection Drill Complete ✓",
+    text: "Drop-baggage trap avoided! When rebooking in Amadeus, a plain FXQ/S…/R,UP prices into the cheapest available fare brand (often Light/0PC). If the passenger originally had 1PC, dropping to 0PC without consent is a serious error. Always check TTH/T1 for original AFF brand, and use /FF-ECOSTAND to force Amadeus to quote within the correct fare family with 1PC included."
+  }
+};
+
+
 
 /* === ENGINE === */
 /**
@@ -5493,6 +6193,8 @@ window.GDS_SCENARIOS["tqt_tte"] = {
 
     const categoryOrder = [
       "Rebook",
+      "Fare Rules",
+      "Baggage & Fare Family",
       "Void & Sell",
       "Refund",
       "Split PNR",

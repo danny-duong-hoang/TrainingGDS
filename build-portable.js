@@ -38,7 +38,10 @@ const scenarioFiles = [
   'amadeus-cancel-xa.js',
   'amadeus-ignore-ig.js',
   'amadeus-ir-redisplay.js',
-  'amadeus-tqt-tte.js'
+  'amadeus-tqt-tte.js',
+  'amadeus-fare-rules-open.js',
+  'amadeus-check-fare-family.js',
+  'amadeus-drop-baggage-ff.js'
 ];
 
 let scenariosJs = '/* === SCENARIOS REGISTRY === */\n';

@@ -101,6 +101,8 @@
 
     const categoryOrder = [
       "Rebook",
+      "Fare Rules",
+      "Baggage & Fare Family",
       "Void & Sell",
       "Refund",
       "Split PNR",

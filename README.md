@@ -17,8 +17,10 @@ An offline, zero-dependency **Amadeus Selling Platform Connect** training simula
 ## What's Included
 
 ### 1. Amadeus Scenario Simulator (`index.html` & `dist/TrainingGDS-amadeus.html`)
-Over **25 realistic practice drills** spanning 7 core categories:
+Over **28 realistic practice drills** spanning 9 core categories:
 - **Rebook & Exchange:** Unused ATC Inbound Rebook (`FXQ`), CAT 31 Rules Blocked Manual Fallback (`FXP`/`FQN*PE`), Partial-Used Reissues with concrete Date/Point of Issue (`FXX/R,01NOV24,UP,STO/S2,4` and `FXP`), Lowest Class Rebooking (`FXO`), TST Auditing (`TQT`/`TTE/ALL`).
+- **Fare Rules:** Display Fare Rules Menu (`FQN1`), Penalties & Change Fees (`FQN1*PE`), Voluntary Changes & ATC Conditions (`FQN1*VC`).
+- **Baggage & Fare Family:** Stored Ticket History (`TTH`), Fare Family Brand Audit (`TTH/T1` / `AFF-ECOSTAND`), Drop-Baggage Trap & Filter Repricing (`FXQ/S…/R,UP/FF-ECOSTAND`).
 - **Void & Cancellation:** Same-day Void & Rebook (`TRDC`), Standalone Void (`TRDC`), Policy Audit (`HEETT`), Itinerary Cancellation (`XA`).
 - **Refund:** Automated GDS Refund (`TRF/ATC`), Tax-only Refund (`TRF/TAX`).
 - **Passenger & Names:** Split PNR (`SP`), Infant without Seat (`NM1 SURNAME/FIRST(INF//DOB)`).
@@ -96,7 +98,7 @@ TrainingGDS/
 │   ├── format.js                # Shared Amadeus cryptic line formatters
 │   ├── engine.js                # Declarative scenario execution engine
 │   └── app.js                   # Application UI controller and keyboard handling
-├── scenarios/                   # 25 declarative scenario definitions (*.js)
+├── scenarios/                   # 28 declarative scenario definitions (*.js)
 └── dist/
     ├── TrainingGDS-amadeus.html  # Portable single-file simulator
     └── quiz-history-gds.html     # Portable single-file quiz
