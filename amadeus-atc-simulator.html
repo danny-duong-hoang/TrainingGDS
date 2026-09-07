@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Amadeus ATC Rebook Simulator — FL Drill</title>
+<style>
+  :root {
+    --text: #2C2C2B;
+    --text-2: #7D7A75;
+    --canvas: #F4F3F1;
+    --surface: #FFFFFF;
+    --soft: #F9F8F7;
+    --border: #E6E5E3;
+    --blue: #2783DE;
+    --blue-soft: #E5F2FC;
+    --green: #46A171;
+    --green-soft: #E8F1EC;
+    --orange: #D5803B;
+    --orange-soft: #FBEBDE;
+    --red: #E56458;
+    --red-soft: #FCE9E7;
+    --term-bg: #0B0F0C;
+    --term-green: #3DFF7A;
+    --term-amber: #FFB84D;
+    --term-red: #FF6B6B;
+    --term-cyan: #5EEAD4;
+    --term-dim: #6B7280;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+    --radius: 8px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --mono: "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--canvas); color: var(--text); font: 15px/1.45 var(--font); }
+  button, select, input { font: inherit; }
+  button { cursor: pointer; }
+
+  .app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 20px 20px 40px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .topbar h1 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .topbar p {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-dark { background: #1F1F1E; color: #fff; }
+  .badge-blue { background: var(--blue-soft); color: #1A5FA8; }
+  .badge-orange { background: var(--orange-soft); color: #9A5418; }
+  .badge-green { background: var(--green-soft); color: #2F6B4B; }
+
+  .case-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .case-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  .case-item span {
+    font-size: 13px;
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  .scenario-pick {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .scenario-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    text-align: left;
+    min-width: 220px;
+    transition: border-color .15s, background .15s;
+  }
+  .scenario-btn:hover { border-color: #C9C7C3; }
+  .scenario-btn.active {
+    border-color: var(--blue);
+    background: var(--blue-soft);
+  }
+  .scenario-btn strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  .scenario-btn small { color: var(--text-2); font-size: 12px; }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .steps-panel { padding: 14px; position: sticky; top: 12px; }
+  .steps-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 10px;
+  }
+  .step-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .step-item {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 8px;
+    align-items: start;
+    padding: 8px 8px;
+    border-radius: 8px;
+    color: var(--text-2);
+    font-size: 13px;
+  }
+  .step-item .n {
+    width: 22px; height: 22px; border-radius: 999px;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 700;
+    background: var(--soft); color: var(--text-2);
+  }
+  .step-item.active {
+    background: var(--blue-soft);
+    color: var(--text);
+    font-weight: 600;
+  }
+  .step-item.active .n { background: var(--blue); color: #fff; }
+  .step-item.done { color: var(--green); }
+  .step-item.done .n { background: var(--green-soft); color: var(--green); }
+  .step-item.done .n::after { content: "✓"; }
+  .step-item.done .n span { display: none; }
+
+  .main-col { display: grid; gap: 12px; min-width: 0; }
+
+  .term-wrap { overflow: hidden; }
+  .term-chrome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--soft);
+  }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #FF5F57; }
+  .dot.y { background: #FEBC2E; }
+  .dot.g { background: #28C840; }
+  .term-title {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    font-family: var(--mono);
+  }
+  .office-select {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    background: #fff;
+    font-size: 12px;
+    max-width: 220px;
+  }
+
+  .terminal {
+    background: var(--term-bg);
+    color: var(--term-green);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 360px;
+    max-height: 480px;
+    overflow: auto;
+    padding: 14px 16px 18px;
+  }
+  .term-line { white-space: pre-wrap; word-break: break-word; }
+  .term-line.cmd { color: #E8E8E6; }
+  .term-line.ok { color: var(--term-green); }
+  .term-line.info { color: var(--term-cyan); }
+  .term-line.warn { color: var(--term-amber); }
+  .term-line.err { color: var(--term-red); }
+  .term-line.dim { color: var(--term-dim); }
+  .term-line.prompt { color: var(--term-amber); }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 14px;
+    border-top: 1px solid #1a1f1b;
+    background: #080B09;
+  }
+  .prompt-sign { color: var(--term-amber); font-family: var(--mono); font-weight: 700; }
+  #cmdInput {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #F5F5F4;
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 8px 0;
+  }
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { background: var(--soft); }
+
+  .task-card { padding: 14px 16px; }
+  .task-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .task-text { margin: 0 0 10px; font-size: 14px; }
+  .hint {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--soft);
+    color: var(--text-2);
+    font-size: 13px;
+    border: 1px dashed var(--border);
+  }
+  .hint strong { color: var(--text); }
+  .hint.reveal { background: var(--blue-soft); border-style: solid; border-color: #B9D8F5; color: var(--text); }
+
+  .footer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .progress-wrap { display: flex; align-items: center; gap: 10px; color: var(--text-2); font-size: 13px; }
+  .bar {
+    width: 140px; height: 6px; border-radius: 999px; background: var(--border); overflow: hidden;
+  }
+  .bar > i {
+    display: block; height: 100%; width: 0%; background: var(--blue); border-radius: inherit;
+    transition: width .25s ease;
+  }
+
+  .win {
+    display: none;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--green-soft);
+    border: 1px solid #C5DEC9;
+  }
+  .win.show { display: block; }
+  .win h3 { margin: 0 0 6px; font-size: 16px; color: #2F6B4B; }
+  .win p { margin: 0; color: var(--text); font-size: 14px; }
+
+  .help-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  @media (max-width: 900px) {
+    .workspace { grid-template-columns: 1fr; }
+    .steps-panel { position: static; }
+    .case-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .topbar { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <h1>Practice the ATC rebooking workflow</h1>
+      <p>Gõ lệnh Amadeus từng bước · 2 case drill (Unused ATC + CAT31 fail) · offline, không nối GDS thật</p>
+    </div>
+    <div class="badge-row">
+      <span class="badge badge-dark" id="modeBadge">AMADEUS</span>
+      <span class="badge badge-blue" id="typeBadge">UNUSED TICKET</span>
+    </div>
+  </div>
+
+  <div class="scenario-pick" id="scenarioPick"></div>
+
+  <div class="case-bar" id="caseBar"></div>
+
+  <div class="workspace">
+    <aside class="panel steps-panel">
+      <div class="steps-title">Process steps</div>
+      <ol class="step-list" id="stepList"></ol>
+    </aside>
+
+    <div class="main-col">
+      <div class="panel term-wrap">
+        <div class="term-chrome">
+          <div class="dots" aria-hidden="true">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          </div>
+          <div class="term-title" id="termTitle">AMADEUS SELLING PLATFORM CONNECT</div>
+          <label class="sr-only" for="officeSelect" style="position:absolute;left:-9999px">Active office</label>
+          <select id="officeSelect" class="office-select" title="ACTIVE OFFICE"></select>
+        </div>
+        <div class="terminal" id="terminal" aria-live="polite"></div>
+        <div class="input-row">
+          <span class="prompt-sign">&gt;</span>
+          <input id="cmdInput" type="text" autocomplete="off" spellcheck="false" placeholder="Type command and press Enter…" />
+          <button class="btn btn-primary" id="enterBtn" type="button">Enter</button>
+        </div>
+      </div>
+
+      <div class="panel task-card">
+        <div class="task-label">Current task</div>
+        <p class="task-text" id="taskText"></p>
+        <p class="hint" id="hintBox">Gõ lệnh đúng syntax. Sai → thử lại. Cần gợi ý → bấm <strong>Hint</strong>.</p>
+        <div class="footer-bar" style="margin-top:12px">
+          <div class="progress-wrap">
+            <span id="stepMeta">Step 1 of 10</span>
+            <div class="bar" aria-hidden="true"><i id="progressBar"></i></div>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="help-row">
+            <button class="btn btn-ghost" id="hintBtn" type="button">Hint</button>
+            <button class="btn btn-ghost" id="restartBtn" type="button">Restart</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="win" id="winBox">
+        <h3 id="winTitle">Scenario complete</h3>
+        <p id="winText"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const normalize = (s) =>
+    String(s || "")
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, " ")
+      .replace(/\s*,\s*/g, ",")
+      .replace(/\s*\/\s*/g, "/");
+
+  const SCENARIOS = {
+    unused_ib: {
+      id: "unused_ib",
+      title: "A · Unused ATC — rebook inbound",
+      blurb: "EZE–CDG–EZE · dời IB sang 07NOV · ATC OK",
+      typeBadge: "UNUSED TICKET",
+      typeBadgeClass: "badge-blue",
+      caseMeta: {
+        PNR: "ABCXYZ",
+        PASSENGER: "LINDQVIST/ANNA MRS",
+        "TICKET NO.": "074-3853604512",
+        ROUTE: "EZE → CDG → EZE",
+        "ISSUING OFFICE": "STOSG34AA",
+        TASK: "Rebook inbound to 07NOV",
+      },
+      offices: [
+        { id: "STOQK2100", label: "STOQK2100 (DEFAULT)" },
+        { id: "STOSG34AA", label: "STOSG34AA (ISSUING OFFICE)" },
+        { id: "LONAC2800", label: "LONAC2800 (LONDON BRANCH)" },
+      ],
+      startOffice: "STOQK2100",
+      targetOffice: "STOSG34AA",
+      bootLines: [
+        { t: "info", text: "AMADEUS SELLING PLATFORM CONNECT — STOQK2100" },
+        { t: "dim", text: "OFFICE: STOQK2100 | AGENT: ATC-TRAINING" },
+        { t: "dim", text: "────────────────────────────────────────" },
+        { t: "ok", text: "READY" },
+        { t: "dim", text: "" },
+      ],
+      steps: [
+        {
+          title: "Change Office ID",
+          task: "You are logged into STOQK2100, but the ticket was issued by STOSG34AA. ATC rebooking must run from the issuing office. Switch office via the dropdown (top right) or type the office ID.",
+          hint: "Chọn <strong>STOSG34AA (ISSUING OFFICE)</strong> trên dropdown, hoặc gõ <strong>STOSG34AA</strong> / <strong>JU STOSG34AA</strong>.",
+          accept: (raw, ctx) => {
+            if (ctx.office === "STOSG34AA") return { ok: true, via: "state" };
+            const c = normalize(raw);
+            return {
+              ok: c === "STOSG34AA" || c === "JU STOSG34AA" || c === "JD STOSG34AA" || c === "OFFICE STOSG34AA",
+            };
+          },
+          onSuccess(ctx, api) {
+            ctx.office = "STOSG34AA";
+            api.setOfficeUI("STOSG34AA");
+            api.print("ok", "SIGN IN TO OFFICE: STOSG34AA");
+            api.print("ok", "OFFICE ID  : STOSG34AA");
+            api.print("ok", "CITY       : STOCKHOLM");
+            api.print("ok", "STATUS     : SIGNED IN");
+            api.print("dim", "");
+            api.print("ok", "Office ID changed to STOSG34AA");
+          },
+        },
+        {
+          title: "Retrieve the PNR",
+          task: "Now in the correct office, pull up the booking for LINDQVIST/ANNA MRS. PNR is ABCXYZ.",
+          hint: "Gõ <strong>RTABCXYZ</strong> hoặc <strong>RT ABCXYZ</strong>.",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/^RT\s+/, "RT");
+            return { ok: c === "RTABCXYZ" };
+          },
+          onSuccess(ctx, api) {
+            ctx.pnrOpen = true;
+            api.print("ok", "RP/STOSG34AA  AA/SU  07OCT/1423Z  ABCXYZ");
+            api.print("ok", "  1. LINDQVIST/ANNA MRS");
+            api.print("ok", "  2  AF 0442 V 07NOV 3 EZECDG HK1  2350  1545+1");
+            api.print("ok", "  3  AF 0443 V 14NOV 3 CDGEZE HK1  1700  0545+1");
+            api.print("ok", "  5  TK OK07OCT/STOSG34AA//ETAF");
+            api.print("ok", "  6  FA PAX 074-3853604512/ETAF/EUR842.00/07OCT/STOSG34AA//S2-3");
+            api.print("ok", "TKOR: STOSG34AA");
+            api.print("ok", "SEGMENT STATUS: HK — ATC process can proceed.");
+            api.print("dim", "");
+            api.print("ok", "PNR ABCXYZ retrieved");
+          },
+        },
+        {
+          title: "Open ticket list (RTTN)",
+          task: "Before changes, see all tickets on this PNR and prepare to check coupon status.",
+          hint: "Gõ <strong>RTTN</strong>.",
+          accept: (raw) => ({ ok: normalize(raw) === "RTTN" }),
+          onSuccess(ctx, api) {
+            api.print("ok", "  6  47 FA PAX 074-3853604512/ETAF/EUR842.00/07OCT/STOSG34AA//S2-3");
+            api.print("dim", "");
+            api.print("ok", "Ticket list displayed — one FA PAX ticket found on line 6");
+          },
+        },
+        {
+          title: "Display ticket L6 (TWD/L6)",
+          task: "Open ticket line 6 and confirm every coupon is O (Open). You may use line number or full ticket number 074-3853604512.",
+          hint: "Gõ <strong>TWD/L6</strong> hoặc <strong>TWD/TKT074-3853604512</strong>.",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/-/g, "");
+            return {
+              ok:
+                c === "TWD/L6" ||
+                c === "TWDL6" ||
+                c === "TWD/TKT0743853604512" ||
+                c === "TWD/TKT074-3853604512".replace(/-/g, "") ||
+                normalize(raw) === "TWD/TKT074-3853604512",
+            };
+          },
+          onSuccess(ctx, api) {
+            ctx.ticketChecked = true;
+            api.print("ok", "TICKET: 074-3853604512  LINDQVIST/ANNA MRS");
+            api.print("ok", "ISSUED  : 07OCT  OFFICE: STOSG34AA");
+            api.print("ok", "FARE BASIS: ETAF");
+            api.print("dim", "────────────────────────────────────────");
+            api.print("ok", "COUPON 1  EZE CDG  AF0442  07NOV  V  STATUS: O");
+            api.print("ok", "COUPON 2  CDG EZE  AF0443  14NOV  V  STATUS: O");
+            api.print("dim", "────────────────────────────────────────");
+            api.print("ok", "FARE: EUR 842.00   TAX: EUR 210.00   TOTAL: EUR 1052.00");
+            api.print("ok", "ALL COUPONS OPEN — Ticket eligible for ATC rebooking");
+            api.print("dim", "");
+            api.print("ok", "Ticket L6 verified — all coupons Open");
+          },
+        },
+        {
+          title: "Check availability (SN)",
+          task: "Customer wants inbound on 07NOV. Check CDG→EZE with Air France for open class (same/higher than V).",
+          hint: "Gõ <strong>SN07NOVCDGEZE/AAF</strong> (spacing linh hoạt được).",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/\s/g, "");
+            return {
+              ok:
+                c === "SN07NOVCDGEZE/AAF" ||
+                c === "SN07NOVCDGEZE/AAF," ||
+                /^SN0?7NOVCDGEZE\/AAF$/.test(c),
+            };
+          },
+          onSuccess(ctx, api) {
+            api.print("ok", "AF  CDG EZE  07NOV");
+            api.print("ok", "  1  AF 0443  C9 D9 I9 Z9  W9 S9 Y9 B9  M9 K9 H9 Q9  V4  1700 0545+1  332  0");
+            api.print("dim", "");
+            api.print("ok", "Class V available on line 1 — same as original inbound");
+          },
+        },
+        {
+          title: "Sell new segment (SS1V1)",
+          task: "Sell 1 seat in V class on availability line 1 (no downgrade).",
+          hint: "Gõ <strong>SS1V1</strong>.",
+          accept: (raw) => ({ ok: normalize(raw).replace(/\s/g, "") === "SS1V1" }),
+          onSuccess(ctx, api) {
+            ctx.sold = true;
+            api.print("ok", "  4  AF 0443 V 07NOV 3 CDGEZE HK1  1700  0545+1");
+            api.print("dim", "");
+            api.print("ok", "New inbound added on line 4. Old inbound remains on line 3.");
+          },
+        },
+        {
+          title: "Price with FXQ",
+          task: "Run ATC on the classes you kept/selected: outbound seg 2 + new inbound seg 4. Use FXQ first (not FXO).",
+          hint: "Gõ <strong>FXQ/S2,4/R,UP</strong> (hoặc <strong>FXQ/S2,4/R,UP</strong> với khoảng trắng).",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/\s/g, "");
+            return {
+              ok:
+                c === "FXQ/S2,4/R,UP" ||
+                c === "FXQ/S2-4/R,UP" ||
+                c === "FXQ/S2,4/RUP" ||
+                c === "FXQ/S4,2/R,UP",
+            };
+          },
+          onSuccess(ctx, api) {
+            ctx.priced = true;
+            api.print("info", "ATC REISSUE — GUARANTEED");
+            api.print("ok", "FARE BALANCE ...... EUR    0.00");
+            api.print("ok", "TAX BALANCE ....... EUR    6.00");
+            api.print("ok", "PENALTY ........... EUR   75.00");
+            api.print("warn", "TOTAL ADD COLL .... EUR   81.00");
+            api.print("dim", "");
+            api.print("ok", "FXQ complete — quote airline collect EUR 81.00 (add ETG fee separately)");
+          },
+        },
+        {
+          title: "Delete old inbound (XE3)",
+          task: "Customer agreed and paid path is assumed for drill. Remove old inbound on line 3.",
+          hint: "Gõ <strong>XE3</strong>.",
+          accept: (raw) => ({ ok: ["XE3", "X3", "XE 3"].includes(normalize(raw)) }),
+          onSuccess(ctx, api) {
+            api.print("ok", "  3  AF 0443 V 14NOV 3 CDGEZE HK1  — CANCELLED");
+            api.print("ok", "Old inbound removed");
+          },
+        },
+        {
+          title: "Save the PNR (ER)",
+          task: "End and retrieve — save itinerary + ATC pricing mask.",
+          hint: "Gõ <strong>ER</strong>.",
+          accept: (raw) => ({ ok: normalize(raw) === "ER" }),
+          onSuccess(ctx, api) {
+            api.print("ok", "PNR ABCXYZ UPDATED AND RETRIEVED");
+            api.print("ok", "  2  AF 0442 V 07NOV EZECDG HK1");
+            api.print("ok", "  3  AF 0443 V 07NOV CDGEZE HK1");
+          },
+        },
+        {
+          title: "Forward to Ticketing (QF/0)",
+          task: "Queue the PNR to ticketing for reissue (training queue 0).",
+          hint: "Gõ <strong>QF/0</strong> hoặc <strong>QE/0</strong>.",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/\s/g, "");
+            return { ok: c === "QF/0" || c === "QE/0" || c === "QF0" };
+          },
+          onSuccess(ctx, api) {
+            api.print("ok", "QUEUE PLACED — Q/0 TICKETING");
+            api.print("ok", "Hand off complete. Next on floor: Rebooking Wizard + Fulfillment.");
+          },
+          win: "Unused ATC inbound drill xong. Nhớ: OID đúng → RT → RTTN → TWD (O) → SN → SS → FXQ → XE old → ER → queue.",
+        },
+      ],
+    },
+
+    cat31_fail: {
+      id: "cat31_fail",
+      title: "B · ATC fail (CAT 31) → manual path",
+      blurb: "Same story · FXQ bị chặn · nhận error + chuyển manual",
+      typeBadge: "ATC FAIL → MANUAL",
+      typeBadgeClass: "badge-orange",
+      caseMeta: {
+        PNR: "LMNOPQ",
+        PASSENGER: "NGUYEN/MINH MR",
+        "TICKET NO.": "074-9988776655",
+        ROUTE: "SGN → CDG → SGN",
+        "ISSUING OFFICE": "STOSG34AA",
+        TASK: "Rebook IB 20DEC · ATC blocked",
+      },
+      offices: [
+        { id: "STOQK2100", label: "STOQK2100 (DEFAULT)" },
+        { id: "STOSG34AA", label: "STOSG34AA (ISSUING OFFICE)" },
+      ],
+      startOffice: "STOQK2100",
+      targetOffice: "STOSG34AA",
+      bootLines: [
+        { t: "info", text: "AMADEUS SELLING PLATFORM CONNECT — STOQK2100" },
+        { t: "dim", text: "OFFICE: STOQK2100 | AGENT: ATC-TRAINING" },
+        { t: "dim", text: "CASE: CAT31 / ATC NOT AUTHORIZED DRILL" },
+        { t: "ok", text: "READY" },
+        { t: "dim", text: "" },
+      ],
+      steps: [
+        {
+          title: "Change Office ID",
+          task: "Jump to issuing office STOSG34AA before any rebook work.",
+          hint: "Dropdown <strong>STOSG34AA</strong> hoặc gõ <strong>STOSG34AA</strong>.",
+          accept: (raw, ctx) => {
+            if (ctx.office === "STOSG34AA") return { ok: true, via: "state" };
+            const c = normalize(raw);
+            return { ok: c === "STOSG34AA" || c === "JU STOSG34AA" };
+          },
+          onSuccess(ctx, api) {
+            ctx.office = "STOSG34AA";
+            api.setOfficeUI("STOSG34AA");
+            api.print("ok", "Office ID changed to STOSG34AA");
+          },
+        },
+        {
+          title: "Retrieve the PNR",
+          task: "Open PNR LMNOPQ for NGUYEN/MINH MR.",
+          hint: "<strong>RTLMNOPQ</strong> hoặc <strong>RT LMNOPQ</strong>.",
+          accept: (raw) => ({ ok: normalize(raw).replace(/^RT\s+/, "RT") === "RTLMNOPQ" }),
+          onSuccess(ctx, api) {
+            api.print("ok", "RP/STOSG34AA  LMNOPQ");
+            api.print("ok", "  1. NGUYEN/MINH MR");
+            api.print("ok", "  2  AF 258  N 10DEC SGNCDG HK1");
+            api.print("ok", "  3  AF 259  N 28DEC CDGSGN HK1");
+            api.print("ok", "  6  FA PAX 074-9988776655/ETAF/EUR620.00//S2-3");
+            api.print("ok", "SEGMENT STATUS: HK");
+          },
+        },
+        {
+          title: "Ticket list + display",
+          task: "List tickets then open the FA line to confirm coupons Open.",
+          hint: "Lần lượt chấp nhận: bước này gõ <strong>RTTN</strong> trước — sau khi OK, bước sau là TWD.",
+          accept: (raw) => ({ ok: normalize(raw) === "RTTN" }),
+          onSuccess(ctx, api) {
+            api.print("ok", "  6  FA PAX 074-9988776655/ETAF/EUR620.00//S2-3");
+            api.print("ok", "Ticket on line 6");
+          },
+        },
+        {
+          title: "Display ticket (TWD/L6)",
+          task: "Confirm both coupons are O before trying ATC.",
+          hint: "<strong>TWD/L6</strong>",
+          accept: (raw) => {
+            const c = normalize(raw);
+            return { ok: c === "TWD/L6" || c === "TWD/TKT074-9988776655" };
+          },
+          onSuccess(ctx, api) {
+            api.print("ok", "COUPON 1 SGNCDG STATUS: O");
+            api.print("ok", "COUPON 2 CDGSGN STATUS: O");
+            api.print("ok", "ALL COUPONS OPEN — try ATC next");
+          },
+        },
+        {
+          title: "Availability IB 20DEC",
+          task: "Search AF CDG–SGN on 20DEC.",
+          hint: "<strong>SN20DECCDGSGN/AAF</strong>",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/\s/g, "");
+            return { ok: c === "SN20DECCDGSGN/AAF" };
+          },
+          onSuccess(ctx, api) {
+            api.print("ok", "  1  AF 259  N4  20DEC CDGSGN  1710  1040+1");
+            api.print("ok", "Class N open on line 1");
+          },
+        },
+        {
+          title: "Sell new IB (SS1N1)",
+          task: "Book same class N on line 1.",
+          hint: "<strong>SS1N1</strong>",
+          accept: (raw) => ({ ok: normalize(raw).replace(/\s/g, "") === "SS1N1" }),
+          onSuccess(ctx, api) {
+            api.print("ok", "  4  AF 259 N 20DEC CDGSGN HK1");
+            api.print("ok", "New IB on line 4 · old IB still line 3");
+          },
+        },
+        {
+          title: "Try ATC FXQ (expect FAIL)",
+          task: "Run FXQ on kept OB + new IB. This carrier returns CAT 31 / ATC not authorized — that is the drill point.",
+          hint: "<strong>FXQ/S2,4/R,UP</strong> — lần này sẽ ra ERROR (đúng bài).",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/\s/g, "");
+            return { ok: c === "FXQ/S2,4/R,UP" || c === "FXQ/S2-4/R,UP" };
+          },
+          onSuccess(ctx, api) {
+            api.print("err", " / \\\ ");
+            api.print("err", "(  )  AMADEUS TICKET CHANGER NOT AUTHORIZED");
+            api.print("err", " \\ /  CARRIER RESTRICTED ACCESS TO CAT 31");
+            api.print("warn", "ATC CANNOT GUARANTEE / CALCULATE THIS REISSUE");
+            api.print("dim", "");
+            api.print("info", "FLOOR NEXT: do NOT invent a fee — read fare rules PENALTIES, then manual price.");
+          },
+        },
+        {
+          title: "Read penalties (FQN)",
+          task: "ATC failed. Check change permission + penalty amount from fare rules.",
+          hint: "Gõ <strong>FQN1*PE</strong> hoặc <strong>FQN*PE</strong> hoặc <strong>FQN</strong>.",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/\s/g, "");
+            return {
+              ok:
+                c === "FQN1*PE" ||
+                c === "FQN*PE" ||
+                c === "FQN1PE" ||
+                c === "FQN" ||
+                c === "FQN1",
+            };
+          },
+          onSuccess(ctx, api) {
+            api.print("ok", "16.PENALTIES");
+            api.print("ok", "  CHANGES");
+            api.print("ok", "    BEFORE DEPARTURE CHARGE EUR 100.00 PER DIRECTION.");
+            api.print("ok", "    CHANGES PERMITTED.");
+            api.print("warn", "→ IB only = 1 direction → airline penalty EUR 100 (not per sector).");
+          },
+        },
+        {
+          title: "Manual price FXP",
+          task: "Price segments customer will fly: OB seg 2 + new IB seg 4. Create/store direction with FXP.",
+          hint: "<strong>FXP/S2,4/R,UP</strong>",
+          accept: (raw) => {
+            const c = normalize(raw).replace(/\s/g, "");
+            return { ok: c === "FXP/S2,4/R,UP" || c === "FXP/S2-4/R,UP" };
+          },
+          onSuccess(ctx, api) {
+            api.print("ok", "NEW FARE ........ EUR 640.00   (old 620.00 → +20.00)");
+            api.print("ok", "NEW TAX ......... EUR 205.00   (old 200.00 → +5.00)");
+            api.print("ok", "PENALTY (rules).. EUR 100.00");
+            api.print("warn", "AIRLINE COLLECT . EUR 125.00  + ETG service fee on floor");
+            api.print("ok", "TST / pricing mask ready for ticketing notes");
+          },
+        },
+        {
+          title: "Cleanup + save",
+          task: "Remove old IB (line 3) and ER save. (Assume paid for drill.)",
+          hint: "Gõ <strong>XE3</strong> — sau khi OK sẽ yêu cầu <strong>ER</strong> ở nhịp commit.",
+          accept: (raw) => ({ ok: ["XE3", "X3"].includes(normalize(raw)) }),
+          onSuccess(ctx, api) {
+            api.print("ok", "Old IB line 3 cancelled");
+            ctx._needEr = true;
+          },
+          // special: dual-phase handled below via wrap
+        },
+        {
+          title: "Save (ER)",
+          task: "Save PNR after cleanup.",
+          hint: "<strong>ER</strong>",
+          accept: (raw) => ({ ok: normalize(raw) === "ER" }),
+          onSuccess(ctx, api) {
+            api.print("ok", "PNR LMNOPQ UPDATED");
+            api.print("ok", "Manual path complete — paste pricing evidence into Rebooking Wizard.");
+          },
+          win: "CAT31 drill xong. Khi FXQ/FXO fail: FQN*PE → FXP/FXX (unused) hoặc FXX→FQP (partial) → diff + penalty + ETG fee. Không bịa số.",
+        },
+      ],
+    },
+  };
+
+  // DOM
+  const el = {
+    scenarioPick: document.getElementById("scenarioPick"),
+    caseBar: document.getElementById("caseBar"),
+    stepList: document.getElementById("stepList"),
+    terminal: document.getElementById("terminal"),
+    cmdInput: document.getElementById("cmdInput"),
+    enterBtn: document.getElementById("enterBtn"),
+    officeSelect: document.getElementById("officeSelect"),
+    termTitle: document.getElementById("termTitle"),
+    taskText: document.getElementById("taskText"),
+    hintBox: document.getElementById("hintBox"),
+    hintBtn: document.getElementById("hintBtn"),
+    restartBtn: document.getElementById("restartBtn"),
+    stepMeta: document.getElementById("stepMeta"),
+    progressBar: document.getElementById("progressBar"),
+    progressPct: document.getElementById("progressPct"),
+    typeBadge: document.getElementById("typeBadge"),
+    winBox: document.getElementById("winBox"),
+    winTitle: document.getElementById("winTitle"),
+    winText: document.getElementById("winText"),
+  };
+
+  let state = {
+    scenarioId: "unused_ib",
+    stepIndex: 0,
+    office: "STOQK2100",
+    hintShown: false,
+    done: false,
+  };
+
+  function scenario() {
+    return SCENARIOS[state.scenarioId];
+  }
+
+  function api() {
+    return {
+      print(kind, text) {
+        const div = document.createElement("div");
+        div.className = "term-line " + (kind || "ok");
+        div.textContent = text;
+        el.terminal.appendChild(div);
+        el.terminal.scrollTop = el.terminal.scrollHeight;
+      },
+      setOfficeUI(id) {
+        el.officeSelect.value = id;
+        el.termTitle.textContent = "AMADEUS SELLING PLATFORM CONNECT — " + id;
+      },
+    };
+  }
+
+  function renderScenarioButtons() {
+    el.scenarioPick.innerHTML = "";
+    Object.values(SCENARIOS).forEach((s) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "scenario-btn" + (s.id === state.scenarioId ? " active" : "");
+      b.innerHTML = "<strong>" + s.title + "</strong><small>" + s.blurb + "</small>";
+      b.addEventListener("click", () => loadScenario(s.id));
+      el.scenarioPick.appendChild(b);
+    });
+  }
+
+  function renderCaseBar() {
+    const meta = scenario().caseMeta;
+    el.caseBar.innerHTML = "";
+    Object.entries(meta).forEach(([k, v]) => {
+      const d = document.createElement("div");
+      d.className = "case-item";
+      d.innerHTML = "<label>" + k + "</label><span>" + v + "</span>";
+      el.caseBar.appendChild(d);
+    });
+  }
+
+  function renderOffices() {
+    const s = scenario();
+    el.officeSelect.innerHTML = "";
+    s.offices.forEach((o) => {
+      const opt = document.createElement("option");
+      opt.value = o.id;
+      opt.textContent = o.label;
+      el.officeSelect.appendChild(opt);
+    });
+    el.officeSelect.value = state.office;
+  }
+
+  function renderSteps() {
+    const steps = scenario().steps;
+    el.stepList.innerHTML = "";
+    steps.forEach((st, i) => {
+      const li = document.createElement("li");
+      li.className = "step-item";
+      if (i < state.stepIndex) li.classList.add("done");
+      if (i === state.stepIndex && !state.done) li.classList.add("active");
+      li.innerHTML =
+        '<div class="n"><span>' +
+        (i + 1) +
+        "</span></div><div>" +
+        st.title +
+        "</div>";
+      el.stepList.appendChild(li);
+    });
+    const total = steps.length;
+    const cur = Math.min(state.stepIndex + (state.done ? 0 : 1), total);
+    const pct = Math.round((state.stepIndex / total) * 100);
+    el.stepMeta.textContent = state.done
+      ? "Complete · " + total + "/" + total
+      : "Step " + (state.stepIndex + 1) + " of " + total;
+    el.progressBar.style.width = (state.done ? 100 : pct) + "%";
+    el.progressPct.textContent = (state.done ? 100 : pct) + "%";
+  }
+
+  function renderTask() {
+    const s = scenario();
+    if (state.done) {
+      el.taskText.textContent = "All steps finished. Restart or switch scenario.";
+      el.hintBox.className = "hint";
+      el.hintBox.innerHTML = "Dùng scenario buttons phía trên để drill case kia.";
+      return;
+    }
+    const st = s.steps[state.stepIndex];
+    el.taskText.textContent = st.task;
+    el.hintBox.className = "hint";
+    el.hintBox.innerHTML = state.hintShown
+      ? st.hint
+      : 'Gõ lệnh đúng syntax. Sai → thử lại. Cần gợi ý → bấm <strong>Hint</strong>.';
+    if (state.hintShown) el.hintBox.classList.add("reveal");
+  }
+
+  function clearTerminal() {
+    el.terminal.innerHTML = "";
+  }
+
+  function boot() {
+    clearTerminal();
+    const a = api();
+    scenario().bootLines.forEach((line) => a.print(line.t, line.text));
+  }
+
+  function loadScenario(id) {
+    state.scenarioId = id;
+    state.stepIndex = 0;
+    state.hintShown = false;
+    state.done = false;
+    state.office = scenario().startOffice;
+    state.pnrOpen = false;
+    el.winBox.classList.remove("show");
+    el.typeBadge.textContent = scenario().typeBadge;
+    el.typeBadge.className = "badge " + scenario().typeBadgeClass;
+    renderScenarioButtons();
+    renderCaseBar();
+    renderOffices();
+    api().setOfficeUI(state.office);
+    boot();
+    renderSteps();
+    renderTask();
+    el.cmdInput.value = "";
+    el.cmdInput.focus();
+  }
+
+  function advance() {
+    state.hintShown = false;
+    state.stepIndex += 1;
+    if (state.stepIndex >= scenario().steps.length) {
+      state.done = true;
+      state.stepIndex = scenario().steps.length;
+      const last = scenario().steps[scenario().steps.length - 1];
+      el.winBox.classList.add("show");
+      el.winTitle.textContent = "Scenario complete ✓";
+      el.winText.textContent = last.win || "Nice work.";
+    }
+    renderSteps();
+    renderTask();
+  }
+
+  function submit() {
+    if (state.done) return;
+    const raw = el.cmdInput.value;
+    if (!String(raw).trim()) return;
+    const a = api();
+    a.print("prompt", "> " + raw);
+    el.cmdInput.value = "";
+
+    const st = scenario().steps[state.stepIndex];
+    const result = st.accept(raw, state);
+    if (!result.ok) {
+      // Office dropdown may have already set office for step 0
+      if (state.stepIndex === 0 && state.office === scenario().targetOffice) {
+        // allow empty accept via state only when user presses enter after dropdown — handled below
+      } else {
+        a.print("err", "Incorrect command for this step. Try again.");
+        return;
+      }
+    }
+
+    // If accept failed but office already correct on step 0, still require a command OR treat dropdown-only
+    if (!result.ok) {
+      a.print("err", "Incorrect command for this step. Try again.");
+      return;
+    }
+
+    st.onSuccess(state, a);
+    advance();
+  }
+
+  // Dropdown office change can complete step 1 without typing
+  el.officeSelect.addEventListener("change", () => {
+    const val = el.officeSelect.value;
+    state.office = val;
+    api().setOfficeUI(val);
+    if (!state.done && state.stepIndex === 0 && val === scenario().targetOffice) {
+      const a = api();
+      a.print("dim", "> [PCC CHANGED VIA DROPDOWN TO: " + val + "]");
+      scenario().steps[0].onSuccess(state, a);
+      advance();
+    }
+  });
+
+  el.enterBtn.addEventListener("click", submit);
+  el.cmdInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+    }
+  });
+  el.hintBtn.addEventListener("click", () => {
+    state.hintShown = true;
+    renderTask();
+  });
+  el.restartBtn.addEventListener("click", () => loadScenario(state.scenarioId));
+
+  loadScenario("unused_ib");
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+:root {
+  --text: #2C2C2B;
+  --text-2: #7D7A75;
+  --canvas: #F4F3F1;
+  --surface: #FFFFFF;
+  --soft: #F9F8F7;
+  --border: #E6E5E3;
+  --blue: #2783DE;
+  --blue-soft: #E5F2FC;
+  --green: #46A171;
+  --green-soft: #E8F1EC;
+  --orange: #D5803B;
+  --orange-soft: #FBEBDE;
+  --red: #E56458;
+  --red-soft: #FCE9E7;
+  
+  /* GDS Terminal Colors */
+  --term-bg: #0B0F0C;
+  --term-green: #3DFF7A;
+  --term-amber: #FFB84D;
+  --term-red: #FF6B6B;
+  --term-cyan: #5EEAD4;
+  --term-dim: #6B7280;
+  --term-white: #E8E8E6;
+  
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--canvas);
+  color: var(--text);
+  font: 15px/1.45 var(--font);
+}
+
+button, select, input { font: inherit; }
+button { cursor: pointer; }
+
+/* Badges */
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge-dark { background: #1F1F1E; color: #fff; }
+.badge-blue { background: var(--blue-soft); color: #1A5FA8; }
+.badge-orange { background: var(--orange-soft); color: #9A5418; }
+.badge-green { background: var(--green-soft); color: #2F6B4B; }
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background .15s ease, filter .15s ease;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-ghost:hover { background: var(--soft); }
+
+/* Terminal Line Types */
+.terminal {
+  background: var(--term-bg);
+  color: var(--term-green);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 380px;
+  max-height: 480px;
+  overflow-y: auto;
+  overflow-x: auto;
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+  padding: 14px 16px 18px;
+}
+.term-line { white-space: pre-wrap; word-break: break-word; }
+.term-line.cmd { color: var(--term-white); }
+.term-line.ok { color: var(--term-green); }
+.term-line.info { color: var(--term-cyan); }
+.term-line.warn { color: var(--term-amber); font-weight: 600; }
+.term-line.err { color: var(--term-red); font-weight: 600; }
+.term-line.dim { color: var(--term-dim); }
+.term-line.prompt { color: var(--term-amber); }
+
+/* Win Box & Hint Card */
+.hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--soft);
+  color: var(--text-2);
+  font-size: 13px;
+  border: 1px dashed var(--border);
+  transition: all .2s ease;
+}
+.hint strong { color: var(--text); }
+.hint.reveal {
+  background: var(--blue-soft);
+  border-style: solid;
+  border-color: #B9D8F5;
+  color: var(--text);
+}
+
+.win {
+  display: none;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--green-soft);
+  border: 1px solid #C5DEC9;
+}
+.win.show { display: block; }
+.win h3 { margin: 0 0 6px; font-size: 16px; color: #2F6B4B; }
+.win p { margin: 0; color: var(--text); font-size: 14px; }

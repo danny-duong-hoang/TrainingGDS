@@ -1,3 +1,26 @@
+# Dependencies
 node_modules/
+
+# Environment and Secrets
 .env
+.env.*
 config.local.js
+*.key
+*.pem
+*.secret
+
+# OS Junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build & Scratch logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

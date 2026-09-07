@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Amadeus ATC Rebook Simulator — Training Drill</title>
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div>
+      <h1>Amadeus ATC Rebook Drill</h1>
+      <p>Step-by-step command practice · Offline training simulator · No live GDS required</p>
+    </div>
+    <div class="badge-row">
+      <span class="badge badge-dark">AMADEUS</span>
+      <span class="badge badge-blue" id="typeBadge">UNUSED TICKET</span>
+    </div>
+  </header>
+
+  <!-- Scenario Selector -->
+  <nav class="scenario-pick" id="scenarioPick" aria-label="Scenarios"></nav>
+
+  <!-- Case Briefing Bar -->
+  <section class="case-bar" id="caseBar" aria-label="Booking Details"></section>
+
+  <!-- Main Workspace -->
+  <main class="workspace">
+    <!-- Steps Navigation Sidebar -->
+    <aside class="panel steps-panel">
+      <div class="steps-title">Process Steps</div>
+      <ol class="step-list" id="stepList"></ol>
+    </aside>
+
+    <!-- Terminal & Task Guidance -->
+    <div class="main-col">
+      <!-- Terminal Window -->
+      <section class="panel term-wrap" aria-label="GDS Terminal">
+        <div class="term-chrome">
+          <div class="dots" aria-hidden="true">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          </div>
+          <div class="term-title" id="termTitle">AMADEUS SELLING PLATFORM CONNECT</div>
+          <label class="sr-only" for="officeSelect" style="position:absolute;left:-9999px">Active Office</label>
+          <select id="officeSelect" class="office-select" title="Active Office"></select>
+        </div>
+        <div class="terminal" id="terminal" role="log" aria-live="polite"></div>
+        <div class="input-row">
+          <span class="prompt-sign" aria-hidden="true">&gt;</span>
+          <input
+            id="cmdInput"
+            type="text"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="TYPE COMMAND AND PRESS ENTER…"
+          />
+          <button class="btn btn-primary" id="enterBtn" type="button">Enter</button>
+        </div>
+      </section>
+
+      <!-- Task Card & Feedback -->
+      <section class="panel task-card" aria-label="Task Guidance">
+        <div class="task-label">Current Task</div>
+        <p class="task-text" id="taskText"></p>
+        <p class="hint" id="hintBox">Type command with valid syntax. Press <strong>Hint</strong> if you need guidance.</p>
+        
+        <div class="footer-bar">
+          <div class="progress-wrap">
+            <span id="stepMeta">Step 1 of 10</span>
+            <div class="bar" aria-hidden="true"><i id="progressBar"></i></div>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="help-row">
+            <button class="btn btn-ghost" id="hintBtn" type="button">Hint</button>
+            <button class="btn btn-ghost" id="restartBtn" type="button">Restart</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Win Banner -->
+      <div class="win" id="winBox" role="status">
+        <h3 id="winTitle">Scenario Complete ✓</h3>
+        <p id="winText"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Shared Formatters -->
+<script src="js/format.js"></script>
+
+<!-- Scenarios Registration -->
+<script src="scenarios/amadeus-unused-atc.js"></script>
+<script src="scenarios/amadeus-cat31-fail.js"></script>
+<script src="scenarios/amadeus-partial-fxx.js"></script>
+<script src="scenarios/amadeus-split-partial-pax.js"></script>
+<script src="scenarios/amadeus-void-and-sell.js"></script>
+<script src="scenarios/amadeus-void-ticket.js"></script>
+<script src="scenarios/amadeus-add-baggage-ssr.js"></script>
+<script src="scenarios/amadeus-add-docs-apis.js"></script>
+<script src="scenarios/amadeus-retrieve-toolkit.js"></script>
+<script src="scenarios/amadeus-partial-fqp.js"></script>
+<script src="scenarios/amadeus-rebook-fxo.js"></script>
+<script src="scenarios/amadeus-rebook-tte-retry.js"></script>
+<script src="scenarios/amadeus-heett-void-check.js"></script>
+<script src="scenarios/amadeus-add-seat-sm.js"></script>
+<script src="scenarios/amadeus-add-meal-ssr.js"></script>
+<script src="scenarios/amadeus-add-wheelchair.js"></script>
+<script src="scenarios/amadeus-add-infant.js"></script>
+<script src="scenarios/amadeus-emd-view.js"></script>
+<script src="scenarios/amadeus-refund-trf-atc.js"></script>
+<script src="scenarios/amadeus-refund-trf-tax.js"></script>
+<script src="scenarios/amadeus-history-rhi-rhfa.js"></script>
+<script src="scenarios/amadeus-cancel-xa.js"></script>
+<script src="scenarios/amadeus-ignore-ig.js"></script>
+<script src="scenarios/amadeus-ir-redisplay.js"></script>
+<script src="scenarios/amadeus-tqt-tte.js"></script>
+
+<!-- Core Engine & Application UI -->
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
